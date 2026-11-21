@@ -43,6 +43,19 @@ def main():
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(TEXT)
+    # Verify what actually landed on disk, not just what we meant to write:
+    # a truncated or re-encoded file must fail loudly instead of being judged.
+    with open(out_path, "r", encoding="utf-8") as f:
+        written = f.read()
+    if written != TEXT:
+        print("gate check failed: written file differs from TEXT",
+              file=sys.stderr)
+        return 1
+    error = check_gate(written)
+    if error:
+        print("gate check failed on written file: %s" % error,
+              file=sys.stderr)
+        return 1
     print("wrote %d code points to %s" % (len(TEXT), out_path))
     return 0
 
